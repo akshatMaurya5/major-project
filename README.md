@@ -38,5 +38,7 @@ cd pg-app-server
 node index.js
 ```
 
-# Current Status
-All Done!!
+# IMPORTANT!!
+Make sure you register user with domain name "@sac.isro.gov.in"
+
+#YOUR APP IS NOW RUNNING IN YOUR BROWSER!
