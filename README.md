@@ -1,20 +1,42 @@
 # PG
--abbreviation for Packed goods in context of assets 
+-abbreviation for Packed goods in the context of assets 
 
 # Asset Tracking
-A full-fleged MERN based CRUD app that lets you look for your assets, or even add your own asset.
+A full-fledged MERN-based CRUD app that lets you look for your assets, or even add your asset.
 
 # Features 
-1. Explore assets and seeing their details.
-2. Option to upload your own asset.
+1. Explore assets and see their details.
+2. Option to upload your asset.
 3. Option to search through the list of assets via their registration numbers.
 
 # How-to-use
 1. Clone the repository.
-2. Install node, mongoose, mongoDB. 
-3. Open the cloned repository in VScode and run npm install to install all the required dependencies.
-4. Navigate to pg-app and pg-app-server in seperate terminals and run npm start in both of them.
-5. Visit localhost:3000 and you are good to go.
+2. Open two terminals
+3. Run the following lines of code in terminals
+```
+cd pg-app
+npm i
+```
+
+```
+npm pg-app-server
+npm i
+```
+4. Now create a .env file in the pg-app server and add the following environment variables
+```
+CONNECTION_URL=your_mongoDb_Uri
+PORT=5000
+JWT_PASSWORD=your_jwt_password
+```
+5. Now run following commands :
+```
+cd pg-app
+npm run start
+```
+```
+cd pg-app-server
+node index.js
+```
 
 # Current Status
 All Done!!
