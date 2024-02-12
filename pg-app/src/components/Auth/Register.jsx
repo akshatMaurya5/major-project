@@ -18,7 +18,10 @@ export default function Register() {
         password,
         confirmPassword,
       };
-      const response = await axios.post("http://localhost:5000/auth/", formData);
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/auth/`,
+        formData
+      );
       console.log(response);
       if(response.data.success == false)
       {
@@ -124,7 +127,7 @@ export default function Register() {
                 onChange={(e) => {
                   setemail(e.target.value);
                 }}
-                pattern="[a-z.]*[@]\bsac.isro.gov.in"
+                // pattern="[a-z.]*[@]\bsac.isro.gov.in"
                 style={{ padding: "16px 10px", borderRadius: "2%", border: "1px solid grey", marginBottom: "30px"}}
               />
               {/* <p

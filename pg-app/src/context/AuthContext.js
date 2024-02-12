@@ -6,7 +6,7 @@ const AuthContext= createContext();
 function AuthContextProvider(props) {
     const [loggedIn, setloggedIn] = useState(false);
     async function func(){
-        const status = await axios.get("http://localhost:5000/auth/loggedIn");
+        const status = await axios.get(`${process.env.REACT_APP_API_URL}/auth/loggedIn`);
         setloggedIn(status.data);
     }
     useEffect(()=>{

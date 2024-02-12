@@ -20,13 +20,13 @@ async function update()
     {    return;    }
     lati=arr[i][0];
     longi=arr[i][1];
-    Axios.post('http://localhost:5000/insertLocation',{
+    Axios.post(`${process.env.REACT_APP_API_URL}/insertLocation`,{
         lati:lati,
         long:longi,
         key:pgid,
     });
     await sleep(1000);
-    Axios.get('http://localhost:5000/getLiveLocation?key='+pgid).then((response)=>{
+    Axios.get(`${process.env.REACT_APP_API_URL}/getLiveLocation?key=`+pgid).then((response)=>{
 
         setCoords(response.data);
     })
@@ -45,7 +45,7 @@ let ViewPg=()=>{
     [coords,setCoords] = useState({lati:0,long:0,key:0,});
 
     useEffect(()=>{
-        Axios.get("http://localhost:5000/read").then((response)=>{
+        Axios.get(`${process.env.REACT_APP_API_URL}/read`).then((response)=>{
             setpglist(response.data);
             //console.log(pglist);
         });

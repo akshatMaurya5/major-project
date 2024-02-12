@@ -11,7 +11,7 @@ let AddPg = () => {
   const [ocontact, setocontact] = useState("");
 
   const addToList = () => {
-    Axios.post("http://localhost:5000/insert", {
+    Axios.post(`${process.env.REACT_APP_API_URL}/insert`, {
       pname: pname,
       paddress: paddress,
       pfacilities: pfacilities,

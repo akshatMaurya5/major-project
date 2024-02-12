@@ -8,7 +8,7 @@ function Records(props){
     [locList,setLocList]=useState([]);
 
     useEffect(()=>{
-        Axios.get("http://localhost:5000/getLocation?key="+props.id).then((response)=>{
+        Axios.get(`${process.env.REACT_APP_API_URL}/getLocation?key=`+props.id).then((response)=>{
             setLocList(response.data);
         });
     }

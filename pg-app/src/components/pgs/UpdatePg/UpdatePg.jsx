@@ -11,7 +11,7 @@ let UpdatePg=()=>{
     const [ocontact,setocontact]=useState("");
 
     const addToList=()=>{
-        Axios.post("http://localhost:5000/update",
+        Axios.post(`${process.env.REACT_APP_API_URL}/update`,
         {
             pname: pname,
             paddress: paddress,

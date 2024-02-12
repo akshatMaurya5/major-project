@@ -17,7 +17,7 @@ let PgList = () => {
   }, [searchterm]);
 
   useEffect(() => {
-    Axios.get("http://localhost:5000/read").then((response) => {
+    Axios.get(`${process.env.REACT_APP_API_URL}/read`).then((response) => {
       setpglist(response.data);
       setoglist(response.data);
     });

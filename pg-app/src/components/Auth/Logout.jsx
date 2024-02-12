@@ -7,7 +7,7 @@ export default function Logout() {
   const { func } = useContext(AuthContext);
   const navigate = useNavigate();
   async function logout() {
-    await axios.get("http://localhost:5000/auth/logout");
+    await axios.get(`${process.env.REACT_APP_API_URL}/auth/logout`);
     await func();
     navigate("/");
   }
