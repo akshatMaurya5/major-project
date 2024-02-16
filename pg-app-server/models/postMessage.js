@@ -1,21 +1,83 @@
-import mongoose from 'mongoose';
-const pgSchema=mongoose.Schema({
+import mongoose, { Schema } from 'mongoose';
+const pgSchema = mongoose.Schema({
     pname: String,
+    vehicleNumber: String,
     paddress: String,
     pfacilities: String,
     oname: String,
     oemail: String,
     ocontact: String,
     selectedfile: String,
-}
-);
-export const Pg=mongoose.model('Pg',pgSchema);
+    locations: [{ type: Schema.Types.ObjectId, ref: 'locations' }] 
 
-const locationSchema=mongoose.Schema({
-    lati:Number,
-    long:Number,
-    key:Number,
-},);
-export const locations=mongoose.model('locations',locationSchema);
+});
+export const Pg = mongoose.model('Pg', pgSchema);
 
+const locationSchema = mongoose.Schema({
+    StartDollerCharHeader: String,
+    Vendor_ID: String,
+    FW_Version: String,
+    Packet_Type: String,
+    Alert_ID: Number,
+    Packet_Status: String,
+    IMEI_Number: String,
+    VehicleRegNumber: String,
+    GPS_Fix_Status: Number,
+    Date: String,
+    Time: String,
+    Latitude: Number,
+    Latitude_Direction: String,
+    Longitude: Number,
+    Longitude_Direction: String,
+    Speed: Number,
+    Heading: Number,
+    NoOfSatellites: Number,
+    Altitude: Number,
+    PDOP: Number,
+    HDOP: Number,
+    Network_Operator: String,
+    Ignition: Number,
+    Main_Power_Status: Number,
+    Main_Input_Voltage: Number,
+    Internal_Batt_Voltage: Number,
+    Emergency_Status: Number,
+    Tamper_Alert: String,
+    GSM_Signal_Strength: Number,
+    CheckSum: String,
+});
+export const locations = mongoose.model('locations', locationSchema);
+
+const dumpSchema = mongoose.Schema({
+    StartDollerCharHeader: String,
+    Vendor_ID: String,
+    FW_Version: String,
+    Packet_Type: String,
+    Alert_ID: Number,
+    Packet_Status: String,
+    IMEI_Number: String,
+    VehicleRegNumber: String,
+    GPS_Fix_Status: Number,
+    Date: String,
+    Time: String,
+    Latitude: Number,
+    Latitude_Direction: String,
+    Longitude: Number,
+    Longitude_Direction: String,
+    Speed: Number,
+    Heading: Number,
+    NoOfSatellites: Number,
+    Altitude: Number,
+    PDOP: Number,
+    HDOP: Number,
+    Network_Operator: String,
+    Ignition: Number,
+    Main_Power_Status: Number,
+    Main_Input_Voltage: Number,
+    Internal_Batt_Voltage: Number,
+    Emergency_Status: Number,
+    Tamper_Alert: String,
+    GSM_Signal_Strength: Number,
+    CheckSum: String,
+})
+export const dataDump = mongoose.model('DumpData', dumpSchema);
 

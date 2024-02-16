@@ -2,13 +2,14 @@ import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
-import { locations } from "./models/postMessage.js";
+import { dataDump, locations } from "./models/postMessage.js";
 import { Pg as PgModel } from "./models/postMessage.js";
 import dotenv from "dotenv";
 dotenv.config();
 const app = express();
 import router from "./routes/userRoutes.js";
 import cookieparser from "cookie-parser";
+import { computeRawDataToJson } from "./utils/compute.js";
 
 // app.use('/auth', authRoutes);
 
@@ -16,7 +17,7 @@ app.use(express.json());
 app.use(cookieparser());
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors({ origin: "http://localhost:52453", credentials: true }));
 
 const CONNECTION_URL = process.env.CONNECTION_URL;
 const PORT = process.env.PORT || 5000;
@@ -133,3 +134,33 @@ app.get("/read", async (req, res) => {
     res.send(result);
   });
 });
+
+app.post('/validate-vehicle', async (req, res) => {
+    try {
+    const key = req.headers['auth-key'] // extremely barebone 
+    if (!key || key != "mindstask-api-key") {
+      res.status(401).json({error: 'Unauthorized request'});
+    }
+    const inputData = computeRawDataToJson(req.body.data)
+
+    if(inputData && inputData.Vendor_ID) {
+    const existingRecord = await PgModel.findOne({ vehicleNumber: inputData.Vendor_ID });
+
+    if (existingRecord) {
+      const newRecord = new locations(inputData)
+      const {_id} = await newRecord.save();
+      existingRecord.locations.push(_id);
+      existingRecord.save();
+      const dumpInstance = new dataDump(inputData)
+      await dumpInstance.save(); // just storing to keep track of the data
+      res.status(200).json({status: 'location updated successfully'})
+    } else {
+      res.status(404).json({error: 'Vehicle not registered'})
+    }
+    } else {
+      throw new Error ('invalid request')
+    }
+  } catch (error) {
+    res.status(500).json({error: `Server error: ${error.message}`})
+  }
+})

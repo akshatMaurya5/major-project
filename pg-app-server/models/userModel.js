@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // vehicles: [{ type: Schema.Types.ObjectId, ref: 'Pg' }] // todo - we will register vehicles for specific users
 });
 
 export default mongoose.model("user", userSchema);
