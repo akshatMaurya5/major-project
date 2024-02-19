@@ -1,15 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
 const pgSchema = mongoose.Schema({
-    pname: String,
-    vehicleNumber: String,
-    paddress: String,
-    pfacilities: String,
-    oname: String,
-    oemail: String,
-    ocontact: String,
-    selectedfile: String,
-    locations: [{ type: Schema.Types.ObjectId, ref: 'locations' }] 
-
+    vehicleName: String,
+    vehicleId: String,
+    driverName: String,
+    driverContactNumber: Number,
+    UserId: {type: Schema.Types.ObjectId, ref: 'user'},
 });
 export const Pg = mongoose.model('Pg', pgSchema);
 
@@ -44,6 +39,7 @@ const locationSchema = mongoose.Schema({
     Tamper_Alert: String,
     GSM_Signal_Strength: Number,
     CheckSum: String,
+    PgId: { type: Schema.Types.ObjectId, ref: 'Pg' },
 });
 export const locations = mongoose.model('locations', locationSchema);
 
