@@ -104,16 +104,15 @@ app.post("/update", async (req, res) => {
   try {
     const { authorization } = req.headers
     const userId = await getUserId(authorization)
-    const { pname, paddress, pfacilities, oname, oemail, ocontact } = req.body;
-    const pgData = await PgModel.findOne({ pname, UserId: userId })
+    const { vehicleId, vehicleName, driverName, driverContactNumber } = req.body;
+    const pgData = await PgModel.findOne({ vehicleName, UserId: userId })
     if (!pgData) throw new Error('No records found')
     // pgData.pname = pname;
     // pgData.userId = userId;
-    pgData.paddress = paddress;
-    pgData.pfacilities = pfacilities;
-    pgData.oname = oname;
-    pgData.oemail = oemail;
-    pgData.ocontact = ocontact;
+    pgData.vehicleId = vehicleId;
+    // pgData.vehicleName = vehicleName;
+    pgData.driverName = driverName;
+    pgData.driverContactNumber = driverContactNumber;
     pgData.save();
     res.status(200).json({ message: 'Data updated successfully' })
     // return res.redirect("back");
