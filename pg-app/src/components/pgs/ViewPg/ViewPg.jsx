@@ -54,46 +54,81 @@ let i = 0;
 
 // }
 
-let ViewPg = () => {
-  let obj = useParams();
-  let pgid = obj.pgid;
+let ViewPg = () => { // ! starts here for some fucking reason because we had to create a 100 constants
+  let { pgid } = useParams();
   let lati, longi;
-  const [pglist, setpglist] = useState([]);
-  const [coords, setCoords] = useState({ lati: 0, long: 0, key: 0 });
+  const [vehicle, setVehicle] = useState([]);
+  const [message, setMessage] = useState({
+    show: false,
+    type: '',
+    message: '',
+  });
+  const [coords, setCoords] = useState({ lati: 1.1, long: 1.1 });
+    useEffect(() => {
+      const intervalId = setInterval( async () => {
+        try {
+          const res = await Axios.get(
+            `${process.env.REACT_APP_API_URL}/getLiveLocation?key=${pgid}`
+          );
+          const {lat, lng} = res.data
+          setCoords({lati: lat, long: lng});
 
-  async function update() {
-    if (i == arr.length) {
-      return;
-    }
-    let splitArr = arr[i].split(',');
-    lati = splitArr[11];
-    longi = splitArr[13];
-    Axios.post(`${process.env.REACT_APP_API_URL}/insertLocation`, {
-      lati: lati,
-      long: longi,
-      key: pgid,
-    });
-    await sleep(1000);
-    Axios.get(`${process.env.REACT_APP_API_URL}/getLiveLocation?key=` + pgid).then(
-      (response) => {
-        setCoords(response.data);
-      }
-    );
-    i = i + 1;
-  }
+        } catch (error) {
+            setMessage({
+              show: true,
+              status: 'error',
+              message: error.response.data.message,
+            });
+        }
+      }, 2000);
 
-  useEffect(() => {
-    Axios.get(`${process.env.REACT_APP_API_URL}/read`).then((response) => {
-      setpglist(response.data);
-    });
+      return () => clearInterval(intervalId);
+    }, [coords]);
 
-    myInterval = setInterval(update, 5000);
+    useEffect(() => {
+      const getVehicles = async () => {
+        try {
+          const res = await Axios.get(`${process.env.REACT_APP_API_URL}/read`);
+          setVehicle(res.data.pgList.find(({vehicleId}) => vehicleId === pgid));
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      getVehicles();
+    }, []);
+  // async function update() {
+  //   if (i == arr.length) {
+  //     return;
+  //   }
+  //   let splitArr = arr[i].split(',');
+  //   lati = splitArr[11];
+  //   longi = splitArr[13];
+  //   Axios.post(`${process.env.REACT_APP_API_URL}/insertLocation`, {
+  //     lati: lati,
+  //     long: longi,
+  //     key: pgid,
+  //   });
+  //   await sleep(1000);
+  //   Axios.get(`${process.env.REACT_APP_API_URL}/getLiveLocation?key=` + pgid).then(
+  //     (response) => {
+  //       setCoords(response.data);
+  //     }
+  //   );
+  //   i = i + 1;
+  // }
 
-    return () => {
-      i = 0;
-      clearInterval(myInterval);
-    };
-  }, []);
+  // useEffect(() => {
+  //   // Axios.get(`${process.env.REACT_APP_API_URL}/read`).then((response) => {
+  //   //   setpglist(response.data);
+  //   // });
+
+  //   myInterval = setInterval(update, 5000);
+
+  //   return () => {
+  //     i = 0;
+  //     clearInterval(myInterval);
+  //   };
+  // }, []);
   return (
     <>
       <section className="view-pg-intro p-3">
@@ -107,78 +142,82 @@ let ViewPg = () => {
         </div>
       </section>
       <div className="abc">
-        {pglist.map((val, key) => {
-          if (key == pgid) {
-            return (
-              // <div className="row-4 mt-5 mb-5">
-              <section key={key} className="view-pg mt-3">
-                <div className="container">
-                  <div className="row">
-                    <div className="col-md-5">
-                      {/* <img src={"/gta map.jpeg"} style={{ width: '28rem',height:"23rem" }}/> */}
-                      <LeafletMap
-                        key={key}
-                        lat={coords.lati}
-                        long={coords.long}
-                      />
-                    </div>
-                    <div className="col-md-7">
-                      <ul className="list-group">
-                        <li className="list-group-item list-group-item-action fw-bold">
-                          {' '}
-                          Name :
-                          <span className="fw-normal">{' ' + val.pname}</span>
-                        </li>
-                        <li className="list-group-item list-group-item-action fw-bold">
-                          Driver :
-                          <span className="fw-normal">
-                            {' ' + val.paddress}
-                          </span>
-                        </li>
-                        <li className="list-group-item list-group-item-action fw-bold">
-                          Latitude :
-                          <span className="fw-normal">{' ' + coords.lati}</span>
-                        </li>
-                        <li className="list-group-item list-group-item-action fw-bold">
-                          Longitude :
-                          <span className="fw-normal">{' ' + coords.long}</span>
-                        </li>
-                        <li className="list-group-item list-group-item-action fw-bold">
-                          Speed :
-                          <span className="fw-normal">{' ' + val.oemail}</span>
-                        </li>
-                        <li className="list-group-item list-group-item-action fw-bold">
-                          Contact :
-                          <span className="fw-normal">
-                            {' ' + val.ocontact}
-                          </span>
-                        </li>
-                        <div className="col">
-                          <Link
-                            to="/pg/list"
-                            className="btn btn-outline-primary mt-3"
-                            style={{
-                              color: 'white',
-                              backgroundColor: '#008ae6',
-                              fontWeight: '600',
-                              marginLeft: '89%',
-                            }}
-                          >
-                            Home
-                          </Link>
-                        </div>
-                      </ul>
-
-                      <Records id={key} />
-                    </div>
+        <section className="view-pg mt-3">
+          <div className="container">
+            {message.show ? (
+              <p
+                style={{
+                  textAlign: 'center',
+                  color: `${message.status === 'success' ? 'green' : 'red'}`,
+                }}
+              >
+                {message.message}
+              </p>
+            ) : (
+              ''
+            )}
+            <div className="row">
+              <div className="col-md-5">
+                {/* <img src={"/gta map.jpeg"} style={{ width: '28rem',height:"23rem" }}/> */}
+                <LeafletMap
+                  // key={vehicle.vehicleId}
+                  lat={coords.lati}
+                  long={coords.long}
+                />
+              </div>
+              <div className="col-md-7">
+                <ul className="list-group">
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    {' '}
+                    Name :
+                    <span className="fw-normal">
+                      {' ' + vehicle.vehicleName}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Driver :
+                    <span className="fw-normal">
+                      {' ' + vehicle.driverName}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Latitude :
+                    <span className="fw-normal">{' ' + coords.lati}</span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Longitude :
+                    <span className="fw-normal">{' ' + coords.long}</span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Speed :<span className="fw-normal">{' ' + 'na'}</span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Contact :
+                    <span className="fw-normal">
+                      {' ' + vehicle.driverContactNumber}
+                    </span>
+                  </li>
+                  <div className="col">
+                    <Link
+                      to="/pg/list"
+                      className="btn btn-outline-primary mt-3"
+                      style={{
+                        color: 'white',
+                        backgroundColor: '#008ae6',
+                        fontWeight: '600',
+                        marginLeft: '89%',
+                      }}
+                    >
+                      Home
+                    </Link>
                   </div>
-                </div>
-              </section>
-              // </div>
-            );
-          }
-        })}
-        ;
+                </ul>
+
+                <Records id={vehicle.vehicleId} />
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </>
   );

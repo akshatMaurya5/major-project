@@ -1,40 +1,49 @@
-import React, { useEffect ,useState} from "react";
+import React, { useEffect, useState } from "react";
 import Axios from "axios";
 
-let locList=[],setLocList;
+let locList = [], setLocList;
 
-function Records(props){
+function Records(props) {
 
-    [locList,setLocList]=useState([]);
+    [locList, setLocList] = useState([]);
 
-    useEffect(()=>{
-        Axios.get(`${process.env.REACT_APP_API_URL}/getLocation?key=`+props.id).then((response)=>{
-            setLocList(response.data);
-        });
+    useEffect(() => {
+        const intervalId = setInterval(async () => {
+            try {
+                const res = await Axios.get(
+                    `${process.env.REACT_APP_API_URL}/getLocation?key=${props.id}`
+                );
+                setLocList(res.data);
+
+            } catch (error) {
+                console.log(error, 'something broke');
+            }
+        }, 2000);
+
+        return () => clearInterval(intervalId);
     }
     )
-    return(
-    <table class="fixed_header">
-        <thead>
-        <tr>
-            <th>id</th>
-            <th>latitude</th>
-            <th>longitude</th>
-        </tr>
-        </thead>
-        <tbody>
-            {locList.map((val)=>{
-               
-                return(
-                    <tr>
-                        <td>{val.key}</td>
-                        <td>{val.lati}</td>
-                        <td>{val.long}</td>
-                    </tr>
-                )
-            })}
-        </tbody>
-    </table>
+    return (
+        <table className="fixed_header">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>latitude</th>
+                    <th>longitude</th>
+                </tr>
+            </thead>
+            <tbody>
+                {locList.map(({Latitude, Longitude}) => {
+
+                    return (
+                        <tr>
+                            <td>{Latitude}</td>
+                            <td>{Longitude}</td>
+                        </tr>
+                    )
+                })}
+            </tbody>
+        </table>
     )
 }
 

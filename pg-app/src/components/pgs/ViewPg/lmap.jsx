@@ -17,7 +17,6 @@ let lati=0,longi=0;
 let marker;
 function newMarker(lat,long)
 {
-    console.log([lati,longi,lat,long]);
     if(lati!=0 && longi!=0 &&lat&&long&&map)
     {
       L.polyline([[lati,longi],[lat,long]]).addTo(map);

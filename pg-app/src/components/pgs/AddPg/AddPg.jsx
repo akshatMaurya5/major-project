@@ -1,63 +1,97 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import Axios from "axios";
 let AddPg = () => {
-  const [pname, setpname] = useState("");
-  const [paddress, setpaddress] = useState("");
-  const [pfacilities, setpfacilities] = useState("");
-  const [oname, setoname] = useState("");
-  const [oemail, setoemail] = useState("");
-  const [ocontact, setocontact] = useState("");
+  const [vehicleName, setVehicleName] = useState("");
+  const [vehicleId, setVehicleId] = useState("");
+  const [driverName, setDriverName] = useState("");
+  const [driverContactNumber, setDriverContactNumber] = useState("");
+  const [message, setMessage] = useState({
+    show: false,
+    type: '',
+    message: '',
+  });
 
-  const addToList = () => {
-    Axios.post(`${process.env.REACT_APP_API_URL}/insert`, {
-      pname: pname,
-      paddress: paddress,
-      pfacilities: pfacilities,
-      oname: oname,
-      oemail: oemail,
-      ocontact: ocontact,
-    });
-    alert("Listed your asset successfully!!");
+  const addToList = async (e) => {
+    e.preventDefault()
+    try {
+      const res = await Axios.post(
+        `${process.env.REACT_APP_API_URL}/insert`,
+        {
+          vehicleName,
+          vehicleId,
+          driverName,
+          driverContactNumber,
+        }
+      );
+      setMessage({ show: true, status: 'success', message: res.data.message });
+    } catch (error) {
+      setMessage({ show: true, status: 'error', message: error.response.data.message });
+    }
   };
+
+useEffect(() => {
+  const hideMessage = () => {
+    setMessage({ show: false, status: '', message: '' });
+  };
+
+  if (message.show) {
+    const timeoutId = setTimeout(hideMessage, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }
+}, [message.show]);
+
 
   return (
     <>
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <section
           className="add-pg p-3"
           style={{
-            backgroundColor: "white",
-            display: "flex",
-            flexDirection: "column",
-            width: "50%",
-            alignItems: "center",
-            marginTop: "20px",
+            backgroundColor: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            width: '50%',
+            alignItems: 'center',
+            marginTop: '20px',
             boxShadow:
-              "0 4px 8px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1)",
-            borderRadius: "5%",
+              '0 4px 8px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1)',
+            borderRadius: '5%',
           }}
         >
           <div className="container">
             <div className="row">
-              <div className="col"  style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
+              {message.show ? (
+                <p style={{ textAlign: "center", color: `${message.status === 'success' ? 'green' : 'red'}` }}>
+                  {message.message}
+                </p>
+              ) : ''}
+              <div
+                className="col"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <p
                   className="h4 text-dark"
                   style={{
-                    fontSize: "30px",
-                    fontWeight: "700",
+                    fontSize: '30px',
+                    fontWeight: '700',
                     // fontFamily: "cursive",
-                    color: "#0099ff",
-                    paddingTop: "20px",
+                    color: '#0099ff',
+                    paddingTop: '20px',
                     // textDecoration: "underline",
-                    marginBottom: "0px",
+                    marginBottom: '0px',
                   }}
                 >
                   Asset Details
@@ -65,78 +99,79 @@ let AddPg = () => {
                 <p className="fst-italic"></p>
               </div>
             </div>
-            <div className="row"  style={{
-                display: "flex",
-                flexDirection: "column",
-                padding: "7%",
-                width: "100%",
-              }}>
+            <div
+              className="row"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '7%',
+                width: '100%',
+              }}
+            >
               <div className="col md-4">
                 <form>
                   <div className="mb-2">
                     <input
                       type="text"
                       onChange={(event) => {
-                        setpname(event.target.value);
+                        setVehicleName(event.target.value);
                       }}
                       className="form-control"
-                      placeholder=" Name"
-                      style={{ padding: "10px 10px", borderRadius: "2%", border: "1px solid grey", marginBottom: "15px"}}
+                      placeholder="Vehicle name"
+                      style={{
+                        padding: '10px 10px',
+                        borderRadius: '2%',
+                        border: '1px solid grey',
+                        marginBottom: '15px',
+                      }}
                     />
                   </div>
                   <div className="mb-2">
                     <input
                       type="text"
                       onChange={(event) => {
-                        setpaddress(event.target.value);
+                        setVehicleId(event.target.value);
                       }}
                       className="form-control"
-                      placeholder="Driver"
-                      style={{ padding: "10px 10px", borderRadius: "2%", border: "1px solid grey", marginBottom: "15px"}}
+                      placeholder="Vehicle id"
+                      style={{
+                        padding: '10px 10px',
+                        borderRadius: '2%',
+                        border: '1px solid grey',
+                        marginBottom: '15px',
+                      }}
                     />
                   </div>
                   <div className="mb-2">
                     <input
                       type="text"
                       onChange={(event) => {
-                        setpfacilities(event.target.value);
+                        setDriverName(event.target.value);
                       }}
                       className="form-control"
-                      placeholder="Latitude"
-                      style={{ padding: "10px 10px", borderRadius: "2%", border: "1px solid grey", marginBottom: "15px"}}
+                      placeholder="Driver name"
+                      style={{
+                        padding: '10px 10px',
+                        borderRadius: '2%',
+                        border: '1px solid grey',
+                        marginBottom: '15px',
+                      }}
                     />
                   </div>
                   <div className="mb-2">
                     <input
                       type="text"
                       onChange={(event) => {
-                        setoname(event.target.value);
+                        setDriverContactNumber(event.target.value);
                       }}
                       className="form-control"
-                      placeholder="Longitude"
-                      style={{ padding: "10px 10px", borderRadius: "2%", border: "1px solid grey", marginBottom: "15px"}}
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <input
-                      type="text"
-                      onChange={(event) => {
-                        setoemail(event.target.value);
+                      placeholder="Driver contact number"
+                      style={{
+                        padding: '10px 10px',
+                        borderRadius: '2%',
+                        border: '1px solid grey',
+                        marginBottom: '15px',
                       }}
-                      className="form-control"
-                      placeholder="Speed"
-                      style={{ padding: "10px 10px", borderRadius: "2%", border: "1px solid grey", marginBottom: "15px"}}
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <input
-                      type="number"
-                      onChange={(event) => {
-                        setocontact(event.target.value);
-                      }}
-                      className="form-control"
-                      placeholder="Owner Contact Number"
-                      style={{ padding: "10px 10px", borderRadius: "2%", border: "1px solid grey", marginBottom: "30px"}}
                     />
                   </div>
                   <div className="mb-2">
@@ -146,36 +181,39 @@ let AddPg = () => {
                       className="btn btn-primary"
                       value="Create"
                       style={{
-                        color: "white",
-                      backgroundColor: " #0099ff",
-                      fontWeight: "600",
-                      // border: "1.4px solid blue",
-                    //   marginTop: "40px",
-                      borderRadius: "24px",
-                      width: "100%",
-                      padding: "1vh 1vh",
-                      textDecoration: "none",
-                      fontWeight: "600",
-                      // marginLeft: "130px",
-                      fontSize: "20px",
-                      marginLeft: "6px"
+                        color: 'white',
+                        backgroundColor: ' #0099ff',
+                        fontWeight: '600',
+                        // border: "1.4px solid blue",
+                        //   marginTop: "40px",
+                        borderRadius: '24px',
+                        width: '100%',
+                        padding: '1vh 1vh',
+                        textDecoration: 'none',
+                        fontWeight: '600',
+                        // marginLeft: "130px",
+                        fontSize: '20px',
+                        marginLeft: '6px',
                       }}
                     />
-                    <Link to={"/pg/list"} className="btn btn-dark ms-2"  style={{
-                  color: "white",
-                backgroundColor: " #0099ff",
-                fontWeight: "600",
-                // border: "1.4px solid blue",
-                marginTop: "20px",
-                borderRadius: "24px",
-                width: "100%",
-                padding: "1vh 1vh",
-                textDecoration: "none",
-                fontWeight: "600",
-                // marginLeft: "130px",
-                fontSize: "20px",
-                
-                }}>
+                    <Link
+                      to={'/pg/list'}
+                      className="btn btn-dark ms-2"
+                      style={{
+                        color: 'white',
+                        backgroundColor: ' #0099ff',
+                        fontWeight: '600',
+                        // border: "1.4px solid blue",
+                        marginTop: '20px',
+                        borderRadius: '24px',
+                        width: '100%',
+                        padding: '1vh 1vh',
+                        textDecoration: 'none',
+                        fontWeight: '600',
+                        // marginLeft: "130px",
+                        fontSize: '20px',
+                      }}
+                    >
                       Home
                     </Link>
                   </div>

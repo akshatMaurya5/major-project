@@ -11,6 +11,8 @@ import router from "./routes/userRoutes.js";
 import cookieparser from "cookie-parser";
 import { computeRawDataToJson } from "./utils/compute.js";
 import { getUserId } from "./utils/jwtVerify.js";
+import jwt from "jsonwebtoken";
+
 
 // app.use('/auth', authRoutes);
 
@@ -18,7 +20,7 @@ app.use(express.json());
 app.use(cookieparser());
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors({ origin: "http://localhost:49680", credentials: true }));
+app.use(cors({ origin: "http://localhost:51694", credentials: true }));
 
 const CONNECTION_URL = process.env.CONNECTION_URL;
 const PORT = process.env.PORT || 5000;
@@ -52,26 +54,40 @@ mongoose
 // });
 
 app.get("/getLiveLocation", async (req, res) => {
-  console.log("🚀 ~ app.get ~ req:", req)
-  locations
-    .find({ key: req.query.key })
-    .sort({ _id: -1 })
-    .limit(1)
-    .then((products) => {
-      console.log(products);
-      products = products[0];
-      let slice = {
-        lati: products.lati,
-        long: products.long,
-        key: products.key,
-      };
-      res.send(slice);
-    });
+  const Vendor_ID = req.query.key
+  try {
+    const location = await locations.findOne({Vendor_ID}).sort({ timestamp: -1 });
+    if(!location) throw new Error('No location data found')
+    // const responseData = {lng: location.Longitude, lat: location.Latitude, lngDirection: location.Longitude_Direction, latDirection: location.Latitude_Direction}
+    const responseData = {lng: Math.random() * 180 - 90, lat: Math.random() * 360 - 180, lngDirection: location.Longitude_Direction, latDirection: location.Latitude_Direction}
+    res.status(200).json(responseData)
+  } catch (error) {
+    res.status(500).json({message: error.message});
+  }
+  // locations
+  //   .find({ key: req.query.key })
+  //   .sort({ _id: -1 })
+  //   .limit(1)
+  //   .then((products) => {
+  //     console.log(products);
+  //     products = products[0];
+  //     let slice = {
+  //       lati: products.lati,
+  //       long: products.long,
+  //       key: products.key,
+  //     };
+  //     res.send(slice);
+  //   });
 });
 
 app.get("/getLocation", async (req, res) => {
+  console.log(req.query.key, 'req.query.key');
+  const {id: userId} = jwt.verify(
+      req.cookies.token,
+      process.env.JWT_PASSWORD
+    );
   locations
-    .find({ key: req.query.key })
+    .find({ Vendor_ID: req.query.key, UserId: userId })
     .sort({ _id: -1 })
     .then((locations) => {
       res.send(locations);
@@ -80,8 +96,12 @@ app.get("/getLocation", async (req, res) => {
 
 app.post("/insert", async (req, res) => {
   try {
-    const { authorization } = req.headers
-    const userId = await getUserId(authorization);
+    // const { authorization } = req.headers
+    // const userId = await getUserId(authorization);
+    const {id: userId} = jwt.verify(
+      req.cookies.token,
+      process.env.JWT_PASSWORD
+    );
     const { vehicleId, vehicleName, driverName, driverContactNumber } = req.body
     const existingRecord = await PgModel.findOne({ vehicleId })
     if (existingRecord) throw new Error('Vehicle already registered')
@@ -93,24 +113,27 @@ app.post("/insert", async (req, res) => {
       UserId: userId,
     });
     const resData = await pg.save();
-    res.status(200).send({ data: resData });
+    console.log(resData);
+    res.status(200).json({ message: 'Record created successfully' });
   } catch (error) {
-    res.status(500).send({ message: error.message })
-    console.log(err);
+    console.log(error.message);
+    res.status(500).json({ message: error.message })
   }
 });
 
 app.post("/update", async (req, res) => {
   try {
-    const { authorization } = req.headers
-    const userId = await getUserId(authorization)
+    const {id: userId} = jwt.verify(
+      req.cookies.token,
+      process.env.JWT_PASSWORD
+    );
     const { vehicleId, vehicleName, driverName, driverContactNumber } = req.body;
-    const pgData = await PgModel.findOne({ vehicleName, UserId: userId })
+    const pgData = await PgModel.findOne({ vehicleId, UserId: userId })
     if (!pgData) throw new Error('No records found')
     // pgData.pname = pname;
     // pgData.userId = userId;
-    pgData.vehicleId = vehicleId;
-    // pgData.vehicleName = vehicleName;
+    // pgData.vehicleId = vehicleId;
+    pgData.vehicleName = vehicleName;
     pgData.driverName = driverName;
     pgData.driverContactNumber = driverContactNumber;
     pgData.save();
@@ -123,10 +146,12 @@ app.post("/update", async (req, res) => {
 
 app.get("/read", async (req, res) => {
   try {
-    const { authorization } = req.headers
-    const userId = await getUserId(authorization)
+    const {id: userId} = jwt.verify(
+      req.cookies.token,
+      process.env.JWT_PASSWORD
+    );
     const pgList = await PgModel.find({ UserId: userId })
-    res.status(200).json({ data: pgList })
+    res.status(200).json({ pgList })
   } catch (error) {
     res.status(500).send({ message: error.message })
   }

@@ -27,7 +27,7 @@ let App=()=> {
       {loggedIn == false && (<><Route exact path="/Login" element={<Login/>}/></>)}
       <Route path={"/pg/list"} element={<PgList/>}/>
       <Route path={"/pg/add"} element={<AddPg/>}/>
-      <Route path={"/pg/update"} element={<UpdatePg/>}/>
+      <Route path={"/pg/update/:pgid"} element={<UpdatePg/>}/>
       <Route path={"/pg/view/:pgid"} element={<ViewPg/>}/>
     </Routes>
     </>
