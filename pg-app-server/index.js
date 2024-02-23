@@ -12,6 +12,7 @@ import cookieparser from "cookie-parser";
 import { computeRawDataToJson } from "./utils/compute.js";
 import { getUserId } from "./utils/jwtVerify.js";
 import jwt from "jsonwebtoken";
+import { getValidDateTimeString } from "./utils/utils.js";
 
 
 // app.use('/auth', authRoutes);
@@ -20,7 +21,7 @@ app.use(express.json());
 app.use(cookieparser());
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors({ origin: "http://localhost:51694", credentials: true }));
+app.use(cors({ origin: "http://navic.mindstask.us:3000", credentials: true }));
 
 const CONNECTION_URL = process.env.CONNECTION_URL;
 const PORT = process.env.PORT || 5000;
@@ -56,10 +57,27 @@ mongoose
 app.get("/getLiveLocation", async (req, res) => {
   const Vendor_ID = req.query.key
   try {
-    const location = await locations.findOne({Vendor_ID}).sort({ timestamp: -1 });
-    if(!location) throw new Error('No location data found')
-    // const responseData = {lng: location.Longitude, lat: location.Latitude, lngDirection: location.Longitude_Direction, latDirection: location.Latitude_Direction}
-    const responseData = {lng: Math.random() * 180 - 90, lat: Math.random() * 360 - 180, lngDirection: location.Longitude_Direction, latDirection: location.Latitude_Direction}
+    const location = await locations.find({Vendor_ID}).sort({TimeStamp: -1}).limit(1)
+    if(!location[0]) throw new Error('No location data found')
+    // res.status(200).json(location)
+    const responseData = {
+      lng: location[0].Longitude, 
+      lat: location[0].Latitude, 
+      lngDirection: location[0].Longitude_Direction, 
+      latDirection: location[0].Latitude_Direction,
+      speed: location[0].Speed,
+      vehicleId: location[0].Vendor_ID,
+      packetStatus: location[0].Packet_Status,
+      imeiNumber: location[0].IMEI_Number,
+      vehicleRegNumber: location[0].VehicleRegNumber,
+      gpsFixStatus: location[0].GPS_Fix_Status,
+      heading: location[0].Heading,
+      heading: location[0].Heading,
+      altitude: location[0].Altitude,
+      networkOperator: location[0].Network_Operator,
+      dateTime: getValidDateTimeString(location[0].Date, location[0].Time)
+    }
+    // const responseData = {lng: Math.random() * 180 - 90, lat: Math.random() * 360 - 180, lngDirection: location.Longitude_Direction, latDirection: location.Latitude_Direction}
     res.status(200).json(responseData)
   } catch (error) {
     res.status(500).json({message: error.message});
@@ -104,6 +122,7 @@ app.post("/insert", async (req, res) => {
     );
     const { vehicleId, vehicleName, driverName, driverContactNumber } = req.body
     const existingRecord = await PgModel.findOne({ vehicleId })
+    console.log('existingRecord', existingRecord);
     if (existingRecord) throw new Error('Vehicle already registered')
     const pg = new PgModel({
       vehicleId, 
@@ -158,7 +177,10 @@ app.get("/read", async (req, res) => {
 });
 
 app.post('/validate-vehicle', async (req, res, next) => {
-  try {
+console.log('hello');
+console.log(req.body);
+console.log('hello');
+try {
     const key = req.headers['auth-key'] // extremely barebone 
     if (!key || key != "mindstask-api-key") {
       res.status(401).json({ error: 'Unauthorized request' });
@@ -166,12 +188,15 @@ app.post('/validate-vehicle', async (req, res, next) => {
     const inputData = computeRawDataToJson(req.body.data)
 
     if (inputData && inputData.Vendor_ID) {
+      console.log('inputData', inputData);
       const existingRecord = await PgModel.findOne({ vehicleId: inputData.Vendor_ID });
-
+      console.log(existingRecord,'existingRecord');
       if (existingRecord) {
         const { _id } = existingRecord;
         const newRecord = new locations(inputData)
+        console.log(newRecord, 'newRecord');
         newRecord.PgId = _id
+        newRecord.TimeStamp = new Date()
         await newRecord.save()
         // const {_id} = await newRecord.save();
         // existingRecord.locations.push(_id);
@@ -189,3 +214,4 @@ app.post('/validate-vehicle', async (req, res, next) => {
     res.status(500).json({ error: `Server error: ${error.message}` })
   }
 })
+

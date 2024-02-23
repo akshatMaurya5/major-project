@@ -39,6 +39,7 @@ const locationSchema = mongoose.Schema({
     Tamper_Alert: String,
     GSM_Signal_Strength: Number,
     CheckSum: String,
+    TimeStamp: Date,
     PgId: { type: Schema.Types.ObjectId, ref: 'Pg' },
 });
 export const locations = mongoose.model('locations', locationSchema);

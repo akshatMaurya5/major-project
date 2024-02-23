@@ -6,55 +6,7 @@ import Records from './history';
 import ReactDOM from 'react-dom';
 import Axios from 'axios';
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-let myInterval, map;
-let arr = [
-  '$PVT,VENDOR001,VTS_VER_00.01,NR,2,L,866477064977617,OD00GE1234,1,120124,164852.000,2829.522172,N,07730.387996,E,0.01,146.57,12,239.682,1.4,0.0,airtel,1,1,24.8,4.2,0,C,29,D9*',
-  '$PVT,VENDOR001,VTS_VER_00.01,NR,2,L,866477064977617,OD00GE1234,0,120124,164854.000,2829.522040,N,07730.388086,E,0.15,146.57,12,239.686,1.4,0.0,airtel,1,1,24.8,4.2,0,C,28,D3*',
-  '$PVT,VENDOR001,VTS_VER_00.01,NR,2,L,866477064977617,OD00GE1234,1,120124,165106.000,2829.521074,N,07730.387420,E,0.11,154.96,12,239.795,1.4,0.0,airtel,1,1,24.8,4.2,0,C,29,C8*',
-  '$PVT,VENDOR001,VTS_VER_00.01,NR,2,L,866477064977617,OD00GE1234,0,120124,165108.000,2829.521080,N,07730.387468,E,0.07,154.96,12,239.800,1.4,0.0,airtel,1,1,24.8,4.2,0,C,30,C2*',
-  '$PVT,VENDOR001,VTS_VER_00.01,NR,2,L,866477064977617,OD00GE1234,1,120124,165315.000,2829.519274,N,07730.386166,E,0.24,321.79,12,239.724,1.4,0.0,airtel,1,1,24.8,4.2,0,C,29,D2*',
-  '$PVT,VENDOR001,VTS_VER_00.01,NR,2,L,866477064977617,OD00GE1234,0,120124,165318.000,2829.519070,N,07730.386370,E,0.18,321.79,12,239.723,1.4,0.0,airtel,1,1,24.8,4.2,0,C,28,CC*',
-  '$PVT,VENDOR001,VTS_VER_00.01,NR,2,L,866477064977617,OD00GE1234,1,120124,165524.604,2829.520870,N,07730.388578,E,0.14,149.98,12,239.782,1.4,0.0,airtel,1,1,24.8,4.2,0,C,30,E5*',
-  '$PVT,VENDOR001,VTS_VER_00.01,NR,2,L,866477064977617,OD00GE1234,0,120124,165528.000,2829.518500,N,07730.390912,E,0.10,149.98,12,239.719,1.4,0.0,airtel,1,1,24.8,4.2,0,C,29,D0*',
-];
-// Split the first string into an array of substrings
-// let splitArr = arr[0].split(',');
-
-// Extract the pgid from the Vendor_ID (assuming Vendor_ID is at index 1)
-// pgid = splitArr[1];
-
-// Extract the lati and longi from Latitude and Longitude (assuming Latitude is at index 11 and Longitude is at index 13)
-// lati = splitArr[11];
-// longi = splitArr[13];
-let i = 0;
-
-// let coords={lati:0,long:0,key:0,},setCoords;
-// async function update()
-// {
-//     if(i==arr.length)
-//     {    return;    }
-//     lati=arr[i][0];
-//     longi=arr[i][1];
-//     Axios.post(`${process.env.REACT_APP_API_URL}/insertLocation`,{
-//         lati:lati,
-//         long:longi,
-//         key:pgid,
-//     });
-//     await sleep(1000);
-//     Axios.get(`${process.env.REACT_APP_API_URL}/getLiveLocation?key=`+pgid).then((response)=>{
-
-//         setCoords(response.data);
-//     })
-//     //console.log(i);
-//     i=i+1;
-//     // setCoords([lati,longi]);
-
-// }
-
-let ViewPg = () => { // ! starts here for some fucking reason because we had to create a 100 constants
+let ViewPg = () => { 
   let { pgid } = useParams();
   let lati, longi;
   const [vehicle, setVehicle] = useState([]);
@@ -63,7 +15,13 @@ let ViewPg = () => { // ! starts here for some fucking reason because we had to 
     type: '',
     message: '',
   });
-  const [coords, setCoords] = useState({ lati: 1.1, long: 1.1 });
+  const [coords, setCoords] = useState({ lati: 0, long: 0 });
+  const [vehicleData, setVehicleData] = useState({})
+
+  const handleComputation = (input) => {
+    const computedValue = Math.floor(input / 100) + (100 / 60) * (input / 100 - Math.floor(input / 100));
+    return computedValue;
+  }
     useEffect(() => {
       const intervalId = setInterval( async () => {
         try {
@@ -71,13 +29,20 @@ let ViewPg = () => { // ! starts here for some fucking reason because we had to 
             `${process.env.REACT_APP_API_URL}/getLiveLocation?key=${pgid}`
           );
           const {lat, lng} = res.data
-          setCoords({lati: lat, long: lng});
-
+            const computedLat = handleComputation(lat);
+            const computedLng = handleComputation(lng);
+          setCoords({ lati: computedLat, long: computedLng });
+          setVehicleData(res.data)
+            setMessage({
+              show: false,
+              status: '',
+              message: '',
+            });
         } catch (error) {
             setMessage({
               show: true,
               status: 'error',
-              message: error.response.data.message,
+              message: error.response?.data?.message ? error.response?.data?.message :'Something went wrong',
             });
         }
       }, 2000);
@@ -165,13 +130,28 @@ let ViewPg = () => { // ! starts here for some fucking reason because we had to 
                   long={coords.long}
                 />
               </div>
+
               <div className="col-md-7">
                 <ul className="list-group">
                   <li className="list-group-item list-group-item-action fw-bold">
                     {' '}
                     Name :
                     <span className="fw-normal">
-                      {' ' + vehicle.vehicleName}
+                      {' ' + vehicleData.vehicleId}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    {' '}
+                    Date :
+                    <span className="fw-normal">
+                      {' ' + vehicleData.dateTime?.split(',')[0]}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    {' '}
+                    Time :
+                    <span className="fw-normal">
+                      {' ' + vehicleData.dateTime?.split(',')[1]}
                     </span>
                   </li>
                   <li className="list-group-item list-group-item-action fw-bold">
@@ -189,10 +169,47 @@ let ViewPg = () => { // ! starts here for some fucking reason because we had to 
                     <span className="fw-normal">{' ' + coords.long}</span>
                   </li>
                   <li className="list-group-item list-group-item-action fw-bold">
-                    Speed :<span className="fw-normal">{' ' + 'na'}</span>
+                    Speed :
+                    <span className="fw-normal">{' ' + vehicleData.speed}</span>
                   </li>
                   <li className="list-group-item list-group-item-action fw-bold">
-                    Contact :
+                    Network operator :
+                    <span className="fw-normal">
+                      {' ' + vehicleData.networkOperator}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    IMEI number :
+                    <span className="fw-normal">
+                      {' ' + vehicleData.imeiNumber}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Gps fix status :
+                    <span className="fw-normal">
+                      {' ' + vehicleData.gpsFixStatus}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Packet status :
+                    <span className="fw-normal">
+                      {' ' + vehicleData.packetStatus}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Heading :
+                    <span className="fw-normal">
+                      {' ' + vehicleData.heading}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Altitude :
+                    <span className="fw-normal">
+                      {' ' + vehicleData.altitude}
+                    </span>
+                  </li>
+                  <li className="list-group-item list-group-item-action fw-bold">
+                    Driver contact number :
                     <span className="fw-normal">
                       {' ' + vehicle.driverContactNumber}
                     </span>
