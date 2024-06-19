@@ -19,9 +19,12 @@ let ViewPg = () => {
   const [vehicleData, setVehicleData] = useState({})
 
   const handleComputation = (input) => {
-    const computedValue = Math.floor(input / 100) + (100 / 60) * (input / 100 - Math.floor(input / 100));
+    // const input = parseFloat(i)
+    const computedValue =
+      Math.floor(input / 100) +
+      (100 / 60) * (input / 100 - Math.floor(input / 100));
     return computedValue;
-  }
+  };
     useEffect(() => {
       const intervalId = setInterval( async () => {
         try {
@@ -29,9 +32,9 @@ let ViewPg = () => {
             `${process.env.REACT_APP_API_URL}/getLiveLocation?key=${pgid}`
           );
           const {lat, lng} = res.data
-            const computedLat = handleComputation(lat);
+            const computedLat = handleComputation();
             const computedLng = handleComputation(lng);
-          setCoords({ lati: computedLat, long: computedLng });
+          setCoords({ lati: lat, long: lng });
           setVehicleData(res.data)
             setMessage({
               show: false,
